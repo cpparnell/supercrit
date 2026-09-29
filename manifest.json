@@ -30,6 +30,7 @@
         "lib/site.js",
         "lib/snapshot.js",
         "lib/user.js",
+        "lib/settings.js",
         "content.js"
       ],
       "css": [

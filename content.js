@@ -3,8 +3,8 @@ const CRITERION_TTL = 3650 * DAY_MS;
 const CRITERION_MISS_TTL = DAY_MS;
 const MAX_ATTEMPTS = 4;
 const criterionLimit = limiter(4);
-const seenCards = new WeakMap(); // card -> the film id it was scanned for
-const nearCards = new WeakSet(); // within rootMargin of the viewport right now
+let seenCards = new WeakMap(); // card -> the film id it was scanned for
+let nearCards = new WeakSet(); // within rootMargin of the viewport right now
 const busyCards = new WeakSet(); // queued or in flight
 
 class TransientError extends Error {}
@@ -117,9 +117,13 @@ function seriesTag() {
   return tag;
 }
 
-// The user's own history with this film (see lib/user.js), or null if no username is set.
-// Data synced for a previous username is ignored until the new one's sync lands.
+// Which features are on (lib/settings.js), from the popup. Read at start and on every change.
+let settings = DEFAULT_SETTINGS;
+
+// The user's own history with this film (see lib/user.js), or null if no username is set or marks
+// are turned off. Data synced for a previous username is ignored until the new one's sync lands.
 function markFor(film) {
+  if (!settings.marks) return null;
   const user = cachePeek(USER_KEY)?.v;
   return user?.username === cachePeek(USERNAME_KEY)?.v ? userMark(film, user) : null;
 }
@@ -139,6 +143,7 @@ const markTitle = (mark) =>
 // Replaces any existing badge, so a score painted from a stale cache entry gets updated in place.
 // Letterboxd withholds the average for films with few ratings; a dash tells that apart from a miss.
 function renderBadge(container, film) {
+  if (!settings.ratings) return;
   const badge = el("div", "ebert-badge");
   if (film.rating == null) {
     badge.classList.add("ebert-badge--unrated");
@@ -175,7 +180,7 @@ const detailAnchor = () => document.querySelector(SEL.detailMeta) || document.qu
 
 function renderDetail() {
   const anchor = detailAnchor();
-  if (!detail || !anchor) return;
+  if (!detail || !anchor || !settings.ratings) return;
   const { film } = detail;
   const link = el("a", "ebert-detail");
   link.href = film.url;
@@ -205,6 +210,7 @@ function renderDetail() {
 }
 
 function syncDetail() {
+  if (!settings.ratings) return document.querySelector(".ebert-detail")?.remove();
   const path = location.pathname;
   if (detail && detail.path !== path) {
     detail = null;
@@ -300,6 +306,7 @@ chrome.storage.onChanged.addListener((changes, area) => {
       refilter = true;
     }
     if (key === USERNAME_KEY) panel?.sync();
+    if (key === SETTINGS_KEY) applySettings(normalizeSettings(newValue?.v));
     // Another tab changed the filters.
     if (key === FILTERS_KEY && JSON.stringify(newValue?.v) !== JSON.stringify(filters)) {
       filters = normalizeFilters(newValue?.v);
@@ -368,7 +375,8 @@ const visibility = new IntersectionObserver(
         continue;
       }
       nearCards.add(card);
-      if (!busyCards.has(card)) processCard(card);
+      // A retry scheduled before ratings were turned off still re-observes its card.
+      if (settings.ratings && !busyCards.has(card)) processCard(card);
     }
   },
   { rootMargin: "300px" }
@@ -392,6 +400,9 @@ function stale(card, parts) {
 // Painting every known card in the scan itself is what makes a page instant: a rail's few dozen
 // cards, or a page of All Films, badged in the frame the markup lands in, with no observer round trip.
 function scanCards() {
+  syncDetail();
+  syncAllFilms();
+  if (!settings.ratings) return;
   for (const card of document.querySelectorAll(SEL.card)) {
     const parts = cardParts(card);
     if (!stale(card, parts)) continue;
@@ -402,13 +413,14 @@ function scanCards() {
     }
     visibility.observe(card);
   }
-  syncDetail();
-  syncAllFilms();
 }
 
 let scanQueued = false;
+let started = false;
 
 function start() {
+  started = true;
+  settings = normalizeSettings(cachePeek(SETTINGS_KEY)?.v);
   filters = normalizeFilters(cachePeek(FILTERS_KEY)?.v);
   new MutationObserver(() => {
     if (scanQueued) return;
@@ -418,6 +430,31 @@ function start() {
       scanCards();
     });
   }).observe(document.body, { childList: true, subtree: true });
+  scanCards();
+}
+
+// A feature switched in the popup mid-visit. Ratings start over: the badges drawn are removed and
+// every card forgotten, so turning them back on rescans the page as if it had just loaded. The
+// detail line and the filter panel draw or remove themselves on the next scan, and marks are
+// redrawn with the badges they sit on.
+function applySettings(next) {
+  const prev = settings;
+  settings = next;
+  if (!started) return; // start() reads them itself, once the page is ready
+  if (prev.ratings !== next.ratings) {
+    visibility.disconnect();
+    seenCards = new WeakMap();
+    nearCards = new WeakSet();
+    document.querySelectorAll(".ebert-badge").forEach((n) => n.remove());
+    for (const card of document.querySelectorAll("[data-ebert]")) {
+      for (const name of ["ebert", "ebertKey", "ebertQuery", "ebertAttempts"]) delete card.dataset[name];
+    }
+  }
+  if (prev.marks !== next.marks) {
+    dirtyAll = true;
+    refilter = true;
+    panel?.sync();
+  }
   scanCards();
 }
 
@@ -440,7 +477,8 @@ const RESULTS_AHEAD_PX = 1500; // how far below the viewport the next batch is d
 
 let filters = DEFAULT_FILTERS;
 const onAllFilms = () => location.pathname === ALL_FILMS_PATH;
-const filtering = () => !isDefaultFilters(filters);
+// Filters chosen before the feature was turned off are kept, and apply again when it's back on.
+const filtering = () => settings.filters && !isDefaultFilters(filters);
 
 // The site's list for a query string, every page of it, kept for the visit.
 const catalogs = new Map(); // location.search -> Promise<films[]>
@@ -665,7 +703,8 @@ function clearFilters() {
 // replaced, or be navigated away from at any time. Cheap when nothing has moved.
 function syncAllFilms() {
   if (!onAllFilms()) return removeResults();
-  ensurePanel();
+  if (settings.filters) ensurePanel();
+  else panel?.root.remove();
   const siteGrid = document.querySelector(SEL.allFilmsGrid);
   if (!siteGrid) return;
   if (!cardTemplate) captureTemplate(siteGrid);
@@ -913,7 +952,7 @@ function buildPanel(model) {
     (value) => commitFilters({ seen: value || "all" })
   );
   const seenSection = panelSection("Watched");
-  const seenHint = el("p", "ebert-hint", "Add your Letterboxd username in the Ebert popup.");
+  const seenHint = el("p", "ebert-hint");
   seenSection.append(seen.list, seenHint);
 
   body.append(rating, runtimeSection, seenSection);
@@ -921,12 +960,16 @@ function buildPanel(model) {
   setOpen(true);
 
   const sync = () => {
-    // Nothing to compare against until a username is set in the popup; a "watched" filter left
-    // over from before it was cleared would hide films with no visible way to bring them back.
+    // Nothing to compare against until a username is set in the popup, or with marks turned off
+    // there; a "watched" filter left over would hide films with no visible way to bring them back.
     const named = !!cachePeek(USERNAME_KEY)?.v;
-    if (!named && filters.seen !== "all") commitFilters({ seen: "all" });
-    seenSection.classList.toggle("ebert-section--off", !named);
-    seenHint.hidden = named;
+    const usable = named && settings.marks;
+    if (!usable && filters.seen !== "all") commitFilters({ seen: "all" });
+    seenSection.classList.toggle("ebert-section--off", !usable);
+    seenHint.textContent = named
+      ? "Turn on your watched films in the Ebert popup."
+      : "Add your Letterboxd username in the Ebert popup.";
+    seenHint.hidden = usable;
     syncSlider();
     runtime.sync();
     seen.sync();
