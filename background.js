@@ -2,7 +2,7 @@ importScripts("lib/shared.js", "lib/letterboxd.js", "lib/snapshot.js", "lib/user
 
 const HIT_TTL = 7 * DAY_MS;
 const MISS_TTL = 3 * DAY_MS;
-const SNAPSHOT_ALARM = "ebert-snapshot";
+const SNAPSHOT_ALARM = "supercrit-snapshot";
 const SNAPSHOT_CHECK_MS = 6 * 60 * 60 * 1000;
 const USER_SYNC_MS = 3 * 60 * 60 * 1000;
 const letterboxdLimit = limiter(5);
@@ -18,7 +18,7 @@ chrome.runtime.onMessage.addListener((msg, _sender, sendResponse) => {
   lookup(msg.film).then(
     (film) => sendResponse({ film }),
     (err) => {
-      console.warn("[ebert]", err);
+      console.warn("[supercrit]", err);
       sendResponse({ error: String(err.message || err) });
     }
   );
@@ -39,7 +39,7 @@ async function lookup(film) {
   // Ratings drift slowly, so a stale hit is served now and refreshed behind it.
   // A stale miss is worth waiting on: the film may have been added to Letterboxd since.
   if (cached?.v) {
-    pending.catch((err) => console.warn("[ebert] refresh failed", film, err));
+    pending.catch((err) => console.warn("[supercrit] refresh failed", film, err));
     return cached.v;
   }
   return pending;
@@ -49,7 +49,7 @@ function refresh(key, film) {
   if (!inflight.has(key)) {
     const pending = resolveFilm(film, letterboxdFetch)
       .then(async (result) => {
-        if (!result) console.info("[ebert] no Letterboxd match", film);
+        if (!result) console.info("[supercrit] no Letterboxd match", film);
         await cacheSet(key, result, result ? HIT_TTL : MISS_TTL);
         return result;
       })
@@ -100,7 +100,7 @@ async function syncSnapshot() {
     }
     await cacheSet("snapshot:checked", true, SNAPSHOT_CHECK_MS);
   } catch (err) {
-    console.warn("[ebert] snapshot sync failed", err);
+    console.warn("[supercrit] snapshot sync failed", err);
   }
 }
 
@@ -111,7 +111,7 @@ let userSync = Promise.resolve();
 // when the popup saves a username or asks for a sync. Runs one at a time, so tabs loading together
 // share one sync: the queued runs find it fresh and return.
 function syncUser({ force = false, maxAge = USER_SYNC_MS } = {}) {
-  userSync = userSync.then(() => runUserSync(force, maxAge)).catch((err) => console.warn("[ebert] user sync", err));
+  userSync = userSync.then(() => runUserSync(force, maxAge)).catch((err) => console.warn("[supercrit] user sync", err));
   return userSync;
 }
 
@@ -131,7 +131,7 @@ async function runUserSync(force, maxAge) {
     await cacheSet(USER_KEY, synced, USER_SYNC_MS);
     await status("ok", { watched: Object.keys(synced.watched).length, watchlist: Object.keys(synced.watchlist).length });
   } catch (err) {
-    console.warn("[ebert] user sync failed", err);
+    console.warn("[supercrit] user sync failed", err);
     await status(err instanceof UserNotFound ? "not-found" : "error", { message: String(err.message || err) });
   }
 }

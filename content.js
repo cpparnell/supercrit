@@ -106,13 +106,13 @@ const CLOCK =
 // Marks a rating that belongs to the whole series ("Carlos" for "Carlos: Part 2"): a stacked
 // icon that widens to spell out "Series Rating" on hover.
 function seriesTag() {
-  const tag = el("span", "ebert-series");
+  const tag = el("span", "supercrit-series");
   tag.append(
     icon(
       '<rect x="3" y="0.75" width="6.25" height="6.25" rx="1" fill="none" stroke="currentColor" stroke-width="1.2"/>' +
         '<rect x="0.75" y="3" width="6.25" height="6.25" rx="1" fill="currentColor"/>'
     ),
-    el("span", "ebert-series-label", "Series Rating")
+    el("span", "supercrit-series-label", "Series Rating")
   );
   return tag;
 }
@@ -131,9 +131,9 @@ function markFor(film) {
 // The user's own score sits beside the consensus, in the same notation, since the whole point is
 // reading one against the other. Half-stars are exact at one decimal place ("3.5", "4.0").
 function markTag(mark) {
-  const tag = el("span", mark.watched ? "ebert-mark ebert-mark--watched" : "ebert-mark ebert-mark--watchlist");
+  const tag = el("span", mark.watched ? "supercrit-mark supercrit-mark--watched" : "supercrit-mark supercrit-mark--watchlist");
   tag.append(icon(mark.watched ? EYE : CLOCK));
-  if (mark.rating) tag.append(el("span", "ebert-mark-rating", mark.rating.toFixed(1)));
+  if (mark.rating) tag.append(el("span", "supercrit-mark-rating", mark.rating.toFixed(1)));
   return tag;
 }
 
@@ -144,17 +144,17 @@ const markTitle = (mark) =>
 // Letterboxd withholds the average for films with few ratings; a dash tells that apart from a miss.
 function renderBadge(container, film) {
   if (!settings.ratings) return;
-  const badge = el("div", "ebert-badge");
+  const badge = el("div", "supercrit-badge");
   if (film.rating == null) {
-    badge.classList.add("ebert-badge--unrated");
+    badge.classList.add("supercrit-badge--unrated");
     badge.title = "Letterboxd: not enough ratings yet";
-    badge.append(el("span", "ebert-star", "★"), el("span", null, "–"));
+    badge.append(el("span", "supercrit-star", "★"), el("span", null, "–"));
   } else {
     badge.title = `Letterboxd ${film.series ? "series rating " : ""}${film.rating.toFixed(2)} · ${formatCount(film.ratingCount)} ratings`;
-    badge.append(el("span", "ebert-star", "★"), el("span", null, film.rating.toFixed(1)));
+    badge.append(el("span", "supercrit-star", "★"), el("span", null, film.rating.toFixed(1)));
   }
   if (film.series) {
-    badge.classList.add("ebert-badge--series");
+    badge.classList.add("supercrit-badge--series");
     badge.append(seriesTag());
   }
   const mark = markFor(film);
@@ -163,8 +163,8 @@ function renderBadge(container, film) {
     badge.title += ` · ${markTitle(mark)}`;
   }
   // The badge is positioned against the artwork, whatever the site's own CSS does with it.
-  container.classList.add("ebert-anchor");
-  const existing = container.querySelector(".ebert-badge");
+  container.classList.add("supercrit-anchor");
+  const existing = container.querySelector(".supercrit-badge");
   if (existing) existing.replaceWith(badge);
   else container.appendChild(badge);
 }
@@ -182,42 +182,43 @@ function renderDetail() {
   const anchor = detailAnchor();
   if (!detail || !anchor || !settings.ratings) return;
   const { film } = detail;
-  const link = el("a", "ebert-detail");
-  link.href = film.url;
+  const link = el("a", "supercrit-detail");
+  const href = filmUrl(film.url);
+  if (href) link.href = href;
   link.target = "_blank";
   link.rel = "noopener noreferrer";
   if (film.rating == null) {
-    link.append(el("span", "ebert-label", "Letterboxd: not enough ratings yet"));
+    link.append(el("span", "supercrit-label", "Letterboxd: not enough ratings yet"));
   } else {
     link.append(
-      el("span", "ebert-star", "★"),
-      el("span", "ebert-score", film.rating.toFixed(2)),
+      el("span", "supercrit-star", "★"),
+      el("span", "supercrit-score", film.rating.toFixed(2)),
       ...(film.series ? [seriesTag()] : []),
-      el("span", "ebert-label", "Letterboxd"),
-      el("span", "ebert-muted", `${formatCount(film.ratingCount)} ratings`)
+      el("span", "supercrit-label", "Letterboxd"),
+      el("span", "supercrit-muted", `${formatCount(film.ratingCount)} ratings`)
     );
   }
   const mark = markFor(film);
   if (mark) {
-    const you = el("span", `ebert-you ${mark.watched ? "ebert-you--watched" : "ebert-you--watchlist"}`);
+    const you = el("span", `supercrit-you ${mark.watched ? "supercrit-you--watched" : "supercrit-you--watchlist"}`);
     you.append(icon(mark.watched ? EYE : CLOCK), el("span", null, mark.watched ? "Watched" : "In your watchlist"));
-    if (mark.rating) you.append(el("span", "ebert-you-rating", starText(mark.rating)));
+    if (mark.rating) you.append(el("span", "supercrit-you-rating", starText(mark.rating)));
     link.append(you);
   }
-  const existing = document.querySelector(".ebert-detail");
+  const existing = document.querySelector(".supercrit-detail");
   if (existing) existing.replaceWith(link);
   else anchor.after(link);
 }
 
 function syncDetail() {
-  if (!settings.ratings) return document.querySelector(".ebert-detail")?.remove();
+  if (!settings.ratings) return document.querySelector(".supercrit-detail")?.remove();
   const path = location.pathname;
   if (detail && detail.path !== path) {
     detail = null;
-    document.querySelector(".ebert-detail")?.remove();
+    document.querySelector(".supercrit-detail")?.remove();
   }
   if (detail) {
-    if (!document.querySelector(".ebert-detail")) renderDetail();
+    if (!document.querySelector(".supercrit-detail")) renderDetail();
     return;
   }
   const id = criterionId(path);
@@ -232,7 +233,7 @@ function syncDetail() {
       renderDetail();
     })
     .catch((err) => {
-      if (!(err instanceof Cancelled)) console.warn("[ebert]", path, err);
+      if (!(err instanceof Cancelled)) console.warn("[supercrit]", path, err);
     });
 }
 
@@ -242,7 +243,7 @@ function syncDetail() {
 function paintFromCache(card, { id, container }) {
   const meta = knownMeta(card, id);
   if (!meta) return false;
-  card.dataset.ebertKey = lbKey(meta);
+  card.dataset.supercritKey = lbKey(meta);
   const film = cachedFilm(lbKey(meta));
   if (!film?.v) return false;
   renderBadge(container, film.v);
@@ -251,7 +252,7 @@ function paintFromCache(card, { id, container }) {
 
 function repaint(key, film) {
   if (!film) return;
-  for (const card of document.querySelectorAll(`[data-ebert-key="${CSS.escape(key)}"]`)) {
+  for (const card of document.querySelectorAll(`[data-supercrit-key="${CSS.escape(key)}"]`)) {
     const parts = cardParts(card);
     if (parts) renderBadge(parts.container, film);
   }
@@ -261,8 +262,8 @@ function repaint(key, film) {
 // One pass over the keyed cards, rather than a query per key, since a snapshot carries every film
 // in the catalog.
 function repaintAll() {
-  for (const card of document.querySelectorAll("[data-ebert-key]")) {
-    const film = cachedFilm(card.dataset.ebertKey)?.v;
+  for (const card of document.querySelectorAll("[data-supercrit-key]")) {
+    const film = cachedFilm(card.dataset.supercritKey)?.v;
     const parts = film && cardParts(card);
     if (parts) renderBadge(parts.container, film);
   }
@@ -320,22 +321,22 @@ chrome.storage.onChanged.addListener((changes, area) => {
 function settle(card, state) {
   visibility.unobserve(card);
   nearCards.delete(card);
-  card.dataset.ebert = state;
+  card.dataset.supercrit = state;
 }
 
-// data-ebert on each card records its outcome, for diagnosing misses from DevTools.
+// data-supercrit on each card records its outcome, for diagnosing misses from DevTools.
 async function processCard(card) {
   const parts = cardParts(card);
   if (!parts) return settle(card, "not-a-film");
   const { id, container } = parts;
   busyCards.add(card);
-  card.dataset.ebert = "pending";
+  card.dataset.supercrit = "pending";
   const wanted = () => nearCards.has(card) && seenCards.get(card) === id;
   try {
     const meta = await criterionMetaFor(id, wanted, printedTitle(card));
     if (!meta) return settle(card, "no-criterion-meta");
-    card.dataset.ebertQuery = `${meta.title} | ${meta.year} | ${meta.directors.join(", ")}`;
-    card.dataset.ebertKey = lbKey(meta);
+    card.dataset.supercritQuery = `${meta.title} | ${meta.year} | ${meta.directors.join(", ")}`;
+    card.dataset.supercritKey = lbKey(meta);
     if (!wanted()) throw new Cancelled();
     const film = await lookup(meta);
     if (!film) return settle(card, "no-letterboxd-match");
@@ -347,15 +348,15 @@ async function processCard(card) {
     // The extension was reloaded under this page; this script is orphaned until the tab is refreshed.
     if (!chrome.runtime?.id) {
       visibility.disconnect();
-      delete card.dataset.ebert;
+      delete card.dataset.supercrit;
       return;
     }
     // Scrolled away before its turn; still observed, so it resumes when it comes back into view.
-    if (err instanceof Cancelled) return (card.dataset.ebert = "deferred");
-    const attempts = (+card.dataset.ebertAttempts || 0) + 1;
-    card.dataset.ebertAttempts = attempts;
+    if (err instanceof Cancelled) return (card.dataset.supercrit = "deferred");
+    const attempts = (+card.dataset.supercritAttempts || 0) + 1;
+    card.dataset.supercritAttempts = attempts;
     settle(card, err instanceof TransientError ? err.message : `error: ${err}`);
-    console.warn("[ebert]", id, err);
+    console.warn("[supercrit]", id, err);
     if (err instanceof TransientError && attempts < MAX_ATTEMPTS) {
       setTimeout(() => visibility.observe(card), 2000 * 2 ** attempts);
     }
@@ -389,12 +390,12 @@ const visibility = new IntersectionObserver(
 function stale(card, parts) {
   if (!seenCards.has(card)) return true;
   if (seenCards.get(card) !== (parts?.id ?? null)) {
-    parts?.container.querySelector(".ebert-badge")?.remove();
-    delete card.dataset.ebertKey;
+    parts?.container.querySelector(".supercrit-badge")?.remove();
+    delete card.dataset.supercritKey;
     return true;
   }
-  const painted = card.dataset.ebert === "ok" || card.dataset.ebert === "no-rating";
-  return painted && !parts.container.querySelector(".ebert-badge");
+  const painted = card.dataset.supercrit === "ok" || card.dataset.supercrit === "no-rating";
+  return painted && !parts.container.querySelector(".supercrit-badge");
 }
 
 // Painting every known card in the scan itself is what makes a page instant: a rail's few dozen
@@ -408,7 +409,7 @@ function scanCards() {
     if (!stale(card, parts)) continue;
     seenCards.set(card, parts?.id ?? null);
     if (parts && paintFromCache(card, parts)) {
-      card.dataset.ebert = "ok";
+      card.dataset.supercrit = "ok";
       continue;
     }
     visibility.observe(card);
@@ -445,9 +446,9 @@ function applySettings(next) {
     visibility.disconnect();
     seenCards = new WeakMap();
     nearCards = new WeakSet();
-    document.querySelectorAll(".ebert-badge").forEach((n) => n.remove());
-    for (const card of document.querySelectorAll("[data-ebert]")) {
-      for (const name of ["ebert", "ebertKey", "ebertQuery", "ebertAttempts"]) delete card.dataset[name];
+    document.querySelectorAll(".supercrit-badge").forEach((n) => n.remove());
+    for (const card of document.querySelectorAll("[data-supercrit]")) {
+      for (const name of ["supercrit", "supercritKey", "supercritQuery", "supercritAttempts"]) delete card.dataset[name];
     }
   }
   if (prev.marks !== next.marks) {
@@ -533,10 +534,10 @@ let cardTemplate = null;
 const copies = new Map(); // film id -> card
 
 function stripOurs(root) {
-  root.querySelectorAll(".ebert-badge").forEach((n) => n.remove());
+  root.querySelectorAll(".supercrit-badge").forEach((n) => n.remove());
   for (const node of [root, ...root.querySelectorAll("*")]) {
-    node.classList.remove("ebert-anchor", "ebert-hidden");
-    for (const { name } of [...node.attributes]) if (name.startsWith("data-ebert")) node.removeAttribute(name);
+    node.classList.remove("supercrit-anchor", "supercrit-hidden");
+    for (const { name } of [...node.attributes]) if (name.startsWith("data-supercrit")) node.removeAttribute(name);
   }
 }
 
@@ -562,7 +563,7 @@ function cardFor(film) {
   let item = copies.get(film.id);
   if (item) return item;
   item = cardTemplate.cloneNode(true);
-  const titleId = `ebert-title-${film.id}`;
+  const titleId = `supercrit-title-${film.id}`;
   const link = item.querySelector(SEL.cardLink);
   if (link) {
     link.href = filmHref(film);
@@ -596,15 +597,15 @@ let shown = RESULTS_PAGE;
 
 function resultsParts() {
   if (results) return results;
-  const status = el("div", "ebert-status");
-  const count = el("span", "ebert-status-count");
-  const clear = button("ebert-link", "Clear");
-  status.append(el("span", "ebert-status-label", "Letterboxd filters"), count, clear);
-  const empty = el("div", "ebert-empty");
-  const clearEmpty = button("ebert-link", "Clear filters");
+  const status = el("div", "supercrit-status");
+  const count = el("span", "supercrit-status-count");
+  const clear = button("supercrit-link", "Clear");
+  status.append(el("span", "supercrit-status-label", "Letterboxd filters"), count, clear);
+  const empty = el("div", "supercrit-empty");
+  const clearEmpty = button("supercrit-link", "Clear filters");
   empty.append(el("span", null, "No films match these filters."), clearEmpty);
-  const grid = el("ul", "ebert-grid");
-  const more = el("div", "ebert-more");
+  const grid = el("ul", "supercrit-grid");
+  const more = el("div", "supercrit-more");
   clear.addEventListener("click", clearFilters);
   clearEmpty.addEventListener("click", clearFilters);
   // The next batch is drawn as the end of this one comes near. The observer only reports changes,
@@ -632,13 +633,13 @@ function applyFilters() {
   if (!siteGrid) return removeResults();
   captureTemplate(siteGrid);
   const active = filtering();
-  siteGrid.classList.toggle("ebert-hidden", active);
-  document.querySelector(SEL.allFilmsLoader)?.classList.toggle("ebert-hidden", active);
+  siteGrid.classList.toggle("supercrit-hidden", active);
+  document.querySelector(SEL.allFilmsLoader)?.classList.toggle("supercrit-hidden", active);
   if (!active) return removeResults();
 
   const r = resultsParts();
   // Styled as the site's grid, whatever its classes are now.
-  r.grid.className = [...siteGrid.classList].filter((c) => !c.startsWith("ebert-")).concat("ebert-grid").join(" ");
+  r.grid.className = [...siteGrid.classList].filter((c) => !c.startsWith("supercrit-")).concat("supercrit-grid").join(" ");
   if (siteGrid.nextElementSibling !== r.status) {
     siteGrid.after(...r.parts);
     // The grid insets its cards with its own padding; the lines above it line up with the cards.
@@ -662,7 +663,7 @@ function applyFilters() {
       },
       (err) => {
         if (catalogFor !== search) return;
-        console.warn("[ebert] All Films list", err);
+        console.warn("[supercrit] All Films list", err);
         catalogFor = null; // try again on the next change
         r.count.textContent = "Couldn't load the list of films";
       }
@@ -711,8 +712,8 @@ function syncAllFilms() {
   const active = filtering();
   const loader = document.querySelector(SEL.allFilmsLoader);
   const settled =
-    siteGrid.classList.contains("ebert-hidden") === active &&
-    (!loader || loader.classList.contains("ebert-hidden") === active) &&
+    siteGrid.classList.contains("supercrit-hidden") === active &&
+    (!loader || loader.classList.contains("supercrit-hidden") === active) &&
     (!active || (siteGrid.nextElementSibling === results?.status && catalogFor === location.search));
   if (!settled) applyFilters();
 }
@@ -753,7 +754,7 @@ function button(className, text) {
 // filter group doesn't render its options, so a Sort option stands in, turned into a filter one.
 function optionButton(label) {
   const model = document.querySelector(SEL.filterOption) || document.querySelector(SEL.sortOption);
-  if (!model) return button("ebert-option", label);
+  if (!model) return button("supercrit-option", label);
   const node = model.cloneNode(true);
   node.removeAttribute("id");
   node.type = "button";
@@ -770,13 +771,13 @@ function optionButton(label) {
     text.textContent = label;
     node.replaceChildren(text);
   } else node.textContent = label;
-  node.classList.add("ebert-option");
+  node.classList.add("supercrit-option");
   return node;
 }
 
 // Options where at most one is on, so clicking the chosen one turns it off (value null).
 function panelChoices(options, valueFor, onChange) {
-  const list = el("div", "ebert-options");
+  const list = el("div", "supercrit-options");
   const buttons = options.map(({ value, label }) => {
     const node = optionButton(label);
     node.addEventListener("click", () => onChange(valueFor() === value ? null : value));
@@ -789,15 +790,15 @@ function panelChoices(options, valueFor, onChange) {
       node.setAttribute("aria-pressed", on);
       const active = stateClass(node, "filterOptionActive");
       if (active) node.classList.toggle(active, on);
-      node.classList.toggle("ebert-option--on", on);
+      node.classList.toggle("supercrit-option--on", on);
     }
   };
   return { list, sync };
 }
 
 function panelSection(title) {
-  const section = el("div", "ebert-section");
-  section.append(el("h4", "ebert-section-title", title));
+  const section = el("div", "supercrit-section");
+  section.append(el("h4", "supercrit-section-title", title));
   return section;
 }
 
@@ -818,7 +819,7 @@ function rangeSlider(read, commit) {
   const rangeInput = (which, label) => {
     const input = document.createElement("input");
     input.type = "range";
-    input.className = `ebert-range-input ebert-range-input--${which}`;
+    input.className = `supercrit-range-input supercrit-range-input--${which}`;
     input.min = RUNTIME_MIN;
     input.max = RUNTIME_MAX;
     input.step = RUNTIME_STEP;
@@ -827,11 +828,11 @@ function rangeSlider(read, commit) {
   };
   const lo = rangeInput("lo", "Shortest runtime, in minutes");
   const hi = rangeInput("hi", "Longest runtime, in minutes");
-  const fill = el("div", "ebert-range-fill");
-  const track = el("div", "ebert-range");
+  const fill = el("div", "supercrit-range-fill");
+  const track = el("div", "supercrit-range");
   track.append(fill, lo, hi);
-  const value = el("span", "ebert-slider-value");
-  const row = el("div", "ebert-slider-row");
+  const value = el("span", "supercrit-slider-value");
+  const row = el("div", "supercrit-slider-row");
   row.append(track, value);
 
   // Both ends of the fill land on a knob's centre, and a knob sits half its own width inside the
@@ -846,9 +847,9 @@ function rangeSlider(read, commit) {
     fill.style.right = atKnob(1 - frac(f.runtimeMax));
     // With both handles on the same end only one can be on top, and it has to be the one that can
     // still move: at the far end that's the low handle, everywhere else the high one.
-    lo.classList.toggle("ebert-range-input--front", f.runtimeMin > (RUNTIME_MIN + RUNTIME_MAX) / 2);
+    lo.classList.toggle("supercrit-range-input--front", f.runtimeMin > (RUNTIME_MIN + RUNTIME_MAX) / 2);
     const label = runtimeLabel(f);
-    value.replaceChildren(label ? el("span", null, label) : el("span", "ebert-any", "Any length"));
+    value.replaceChildren(label ? el("span", null, label) : el("span", "supercrit-any", "Any length"));
   };
 
   lo.addEventListener("input", () => {
@@ -874,9 +875,9 @@ function buildPanel(model) {
   const content = root.querySelector(SEL.accordionContent);
   if (!head || !title || !region || !content) return null;
   for (const node of [root, ...root.querySelectorAll("[id]")]) node.removeAttribute("id");
-  root.classList.add("ebert-accordion");
-  head.id = "ebert-accordion-head";
-  region.id = "ebert-accordion-body";
+  root.classList.add("supercrit-accordion");
+  head.id = "supercrit-accordion-head";
+  region.id = "supercrit-accordion-body";
   head.setAttribute("aria-controls", region.id);
   head.setAttribute("aria-label", "Letterboxd");
   region.setAttribute("aria-labelledby", head.id);
@@ -911,25 +912,25 @@ function buildPanel(model) {
   };
   head.addEventListener("click", () => setOpen(!open));
 
-  const body = el("div", "ebert-filter-body");
+  const body = el("div", "supercrit-filter-body");
 
   // Rating, as a slider: the useful range is narrow (most of the catalog sits between 3 and 4),
   // so tenths are what separate "good" from "great" here, and a list of bands would be too coarse.
   const slider = document.createElement("input");
   slider.type = "range";
-  slider.className = "ebert-slider";
+  slider.className = "supercrit-slider";
   slider.min = 0;
   slider.max = MAX_MIN_RATING;
   slider.step = 0.1;
   slider.setAttribute("aria-label", "Minimum Letterboxd rating");
-  const sliderValue = el("span", "ebert-slider-value");
+  const sliderValue = el("span", "supercrit-slider-value");
   const syncSlider = () => {
     slider.value = filters.minRating;
-    slider.style.setProperty("--ebert-fill", filters.minRating / MAX_MIN_RATING);
+    slider.style.setProperty("--supercrit-fill", filters.minRating / MAX_MIN_RATING);
     sliderValue.replaceChildren(
       ...(filters.minRating
-        ? [el("span", "ebert-star", "★"), el("span", null, `${filters.minRating.toFixed(1)} and up`)]
-        : [el("span", "ebert-any", "Any rating")])
+        ? [el("span", "supercrit-star", "★"), el("span", null, `${filters.minRating.toFixed(1)} and up`)]
+        : [el("span", "supercrit-any", "Any rating")])
     );
   };
   slider.addEventListener("input", () => {
@@ -937,7 +938,7 @@ function buildPanel(model) {
     syncSlider();
   });
   const rating = panelSection("Rating");
-  const ratingRow = el("div", "ebert-slider-row");
+  const ratingRow = el("div", "supercrit-slider-row");
   ratingRow.append(slider, sliderValue);
   rating.append(ratingRow);
 
@@ -952,7 +953,7 @@ function buildPanel(model) {
     (value) => commitFilters({ seen: value || "all" })
   );
   const seenSection = panelSection("Watched");
-  const seenHint = el("p", "ebert-hint");
+  const seenHint = el("p", "supercrit-hint");
   seenSection.append(seen.list, seenHint);
 
   body.append(rating, runtimeSection, seenSection);
@@ -965,10 +966,10 @@ function buildPanel(model) {
     const named = !!cachePeek(USERNAME_KEY)?.v;
     const usable = named && settings.marks;
     if (!usable && filters.seen !== "all") commitFilters({ seen: "all" });
-    seenSection.classList.toggle("ebert-section--off", !usable);
+    seenSection.classList.toggle("supercrit-section--off", !usable);
     seenHint.textContent = named
-      ? "Turn on your watched films in the Ebert popup."
-      : "Add your Letterboxd username in the Ebert popup.";
+      ? "Turn on your watched films in the Supercrit popup."
+      : "Add your Letterboxd username in the Supercrit popup.";
     seenHint.hidden = usable;
     syncSlider();
     runtime.sync();
@@ -1008,33 +1009,7 @@ const hydrated = domReady.then(
     })
 );
 
-// TEMPORARY: timing instrumentation, to be removed.
-const T = (label) => console.log(`[ebert-timing] ${label} @ ${Math.round(performance.now())}ms`);
-T("script-start");
-cacheReady.then(() => T("cacheReady"));
-cacheFull.then(() => T("cacheFull"));
-domReady.then(() => T("domReady"));
-hydrated.then(() => T("hydrated"));
-{
-  const seen = new MutationObserver(() => {
-    if (!document.querySelector(".ebert-badge")) return;
-    T("first-badge");
-    seen.disconnect();
-  });
-  document.addEventListener("DOMContentLoaded", () => seen.observe(document.body, { childList: true, subtree: true }), {
-    once: true,
-  });
-  window.addEventListener("load", () => {
-    T(`load (badges=${document.querySelectorAll(".ebert-badge").length})`);
-    setTimeout(() => T(`+1s (badges=${document.querySelectorAll(".ebert-badge").length})`), 1000);
-  });
-}
-
-Promise.all([cacheReady.catch((err) => console.warn("[ebert] cache load failed", err)), hydrated]).then(() => {
-  T("start-scan");
-  start();
-  T("end-scan");
-});
+Promise.all([cacheReady.catch((err) => console.warn("[supercrit] cache load failed", err)), hydrated]).then(start);
 
 // Pick up films logged or watchlisted since the last visit; marks repaint when the sync lands.
 chrome.runtime.sendMessage({ type: "syncUser", maxAge: USER_REFRESH_MS }).catch(() => {});

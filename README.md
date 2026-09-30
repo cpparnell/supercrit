@@ -1,2 +1,2 @@
-# Ebert
+# Supercrit
 Letterboxd integration into Criterion Channel

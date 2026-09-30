@@ -26,3 +26,11 @@ test("parseFilmPage handles a runtime with a thousands separator, and one that i
   assert.equal(parseFilmPage(page("<p>1,440&nbsp;mins</p>")).runtime, 1440);
   assert.equal(parseFilmPage(page("")).runtime, null);
 });
+
+test("filmUrl links only to Letterboxd film pages", () => {
+  const { filmUrl } = require("../lib/letterboxd.js");
+  assert.equal(filmUrl("https://letterboxd.com/film/the-swimming-pool/"), "https://letterboxd.com/film/the-swimming-pool/");
+  for (const bad of ["javascript:alert(1)", "https://evil.example/film/x/", "https://letterboxd.com.evil.example/film/x/", "http://letterboxd.com/film/x/", "https://letterboxd.com/film/x/?q=1", null, undefined]) {
+    assert.equal(filmUrl(bad), null, String(bad));
+  }
+});

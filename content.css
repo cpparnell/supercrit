@@ -1,22 +1,22 @@
 /* Tokens mirror Criterion's own UI: Gotham (the family name next/font registers), the duration chip's
    translucent black pill, and the grey used for secondary text. */
 :root {
-  --ebert-green: #00e054;
-  --ebert-blue: #40bcf4; /* Letterboxd's watchlist blue */
-  --ebert-chip-bg: rgba(0, 0, 0, 0.62);
-  --ebert-text: #fff;
-  --ebert-text-secondary: rgb(190, 190, 187);
-  --ebert-text-muted: rgba(190, 190, 187, 0.7);
-  --ebert-font: gotham, -apple-system, BlinkMacSystemFont, "Helvetica Neue", Arial, sans-serif;
+  --supercrit-green: #00e054;
+  --supercrit-blue: #40bcf4; /* Letterboxd's watchlist blue */
+  --supercrit-chip-bg: rgba(0, 0, 0, 0.62);
+  --supercrit-text: #fff;
+  --supercrit-text-secondary: rgb(190, 190, 187);
+  --supercrit-text-muted: rgba(190, 190, 187, 0.7);
+  --supercrit-font: gotham, -apple-system, BlinkMacSystemFont, "Helvetica Neue", Arial, sans-serif;
 }
 
-@keyframes ebert-in {
+@keyframes supercrit-in {
   from { opacity: 0; transform: translateY(-2px); }
   to   { opacity: 1; transform: none; }
 }
 
-.ebert-star {
-  color: var(--ebert-green);
+.supercrit-star {
+  color: var(--supercrit-green);
   /* ★ isn't in Gotham; pin the fallback so it renders the same everywhere. */
   font-family: -apple-system, BlinkMacSystemFont, "Segoe UI Symbol", sans-serif;
   font-weight: 400;
@@ -26,12 +26,12 @@
 
 /* The card's artwork (SELECTORS.cardImage in lib/site.js), tagged by content.js so the badge has
    something to sit against without this file naming any of the site's own classes. */
-.ebert-anchor {
+.supercrit-anchor {
   position: relative;
 }
 
 /* Top-left of the artwork. */
-.ebert-badge {
+.supercrit-badge {
   position: absolute;
   top: 10px;
   left: 8px;
@@ -41,51 +41,51 @@
   gap: 4px;
   padding: 3px 7px 3px 6px;
   border-radius: 5px;
-  background: var(--ebert-chip-bg);
+  background: var(--supercrit-chip-bg);
   -webkit-backdrop-filter: blur(6px);
   backdrop-filter: blur(6px);
-  color: var(--ebert-text);
-  font: 600 12px/17px var(--ebert-font);
+  color: var(--supercrit-text);
+  font: 600 12px/17px var(--supercrit-font);
   font-variant-numeric: tabular-nums;
   letter-spacing: 0.01em;
   pointer-events: none;
-  animation: ebert-in 0.25s ease-out;
+  animation: supercrit-in 0.25s ease-out;
 }
 
-.ebert-badge .ebert-star {
+.supercrit-badge .supercrit-star {
   font-size: 11px;
 }
 
-.ebert-badge--unrated {
-  color: var(--ebert-text-muted);
+.supercrit-badge--unrated {
+  color: var(--supercrit-text-muted);
 }
 
-.ebert-badge--unrated .ebert-star {
-  color: var(--ebert-text-muted);
+.supercrit-badge--unrated .supercrit-star {
+  color: var(--supercrit-text-muted);
 }
 
 /* ---------- Series rating tag ---------- */
 
 /* The rest of the badge ignores the pointer; this one takes hover to reveal its label.
    It sits inside the card's link, so a click still opens the film. */
-.ebert-badge--series {
+.supercrit-badge--series {
   pointer-events: auto;
 }
 
-.ebert-series {
+.supercrit-series {
   display: inline-flex;
   align-items: center;
   align-self: center;
-  color: var(--ebert-text-secondary);
+  color: var(--supercrit-text-secondary);
 }
 
-.ebert-series svg {
+.supercrit-series svg {
   flex: none;
   width: 10px;
   height: 10px;
 }
 
-.ebert-series-label {
+.supercrit-series-label {
   max-width: 0;
   overflow: hidden;
   white-space: nowrap;
@@ -95,15 +95,15 @@
   transition: max-width 0.2s ease, margin-left 0.2s ease, opacity 0.15s ease;
 }
 
-.ebert-badge--series:hover .ebert-series-label,
-.ebert-detail .ebert-series:hover .ebert-series-label {
+.supercrit-badge--series:hover .supercrit-series-label,
+.supercrit-detail .supercrit-series:hover .supercrit-series-label {
   max-width: 90px;
   margin-left: 4px;
   opacity: 1;
 }
 
 @media (prefers-reduced-motion: reduce) {
-  .ebert-series-label {
+  .supercrit-series-label {
     transition: none;
   }
 }
@@ -111,36 +111,36 @@
 /* ---------- The user's own marks ---------- */
 
 /* Letterboxd's own cues: a green eye for watched, a blue clock for the watchlist. */
-.ebert-mark {
+.supercrit-mark {
   display: inline-flex;
   align-items: center;
   align-self: center;
   margin-left: 1px;
 }
 
-.ebert-mark svg,
-.ebert-you svg {
+.supercrit-mark svg,
+.supercrit-you svg {
   flex: none;
   width: 11px;
   height: 11px;
 }
 
-.ebert-mark--watched,
-.ebert-you--watched {
-  color: var(--ebert-green);
+.supercrit-mark--watched,
+.supercrit-you--watched {
+  color: var(--supercrit-green);
 }
 
-.ebert-mark--watchlist,
-.ebert-you--watchlist {
-  color: var(--ebert-blue);
+.supercrit-mark--watchlist,
+.supercrit-you--watchlist {
+  color: var(--supercrit-blue);
 }
 
 /* The user's own score, beside the consensus and in the colour of the mark it belongs to. */
-.ebert-mark {
+.supercrit-mark {
   gap: 3px;
 }
 
-.ebert-mark-rating {
+.supercrit-mark-rating {
   font-weight: 600;
   font-variant-numeric: tabular-nums;
 }
@@ -150,7 +150,7 @@
 /* Our group in the All Films filter panel is a copy of the site's own accordion, so its heading and
    option pills already look like the site's; this styles only what's ours inside it. The panel is
    dark: #121212, with #d2d2d2 text and #0a0a0a pills. */
-.ebert-filter-body {
+.supercrit-filter-body {
   display: flex;
   flex-direction: column;
   gap: 24px;
@@ -158,30 +158,30 @@
 }
 
 /* Subordinate to the accordion's heading: the site's "Filters" label, a size down. */
-.ebert-section-title {
+.supercrit-section-title {
   margin: 0 0 12px;
   color: rgba(255, 255, 255, 0.7);
-  font: 500 12px/1.2 gothamNarrow, var(--ebert-font);
+  font: 500 12px/1.2 gothamNarrow, var(--supercrit-font);
   letter-spacing: 1.2px;
   text-transform: uppercase;
 }
 
-.ebert-section--off {
+.supercrit-section--off {
   opacity: 0.5;
   pointer-events: none;
 }
 
-.ebert-hint {
+.supercrit-hint {
   margin: 10px 0 0;
-  color: var(--ebert-text-muted);
-  font: 400 13px/1.4 var(--ebert-font);
+  color: var(--supercrit-text-muted);
+  font: 400 13px/1.4 var(--supercrit-font);
 }
 
-.ebert-hint[hidden] {
+.supercrit-hint[hidden] {
   display: none;
 }
 
-.ebert-options {
+.supercrit-options {
   display: flex;
   flex-direction: column;
   gap: 8px;
@@ -189,23 +189,23 @@
 
 /* The copied pills carry the site's own active style too; this makes the choice unmistakable
    even if the site's active look is as quiet as its resting one. */
-.ebert-option--on {
+.supercrit-option--on {
   box-shadow: inset 0 0 0 1px rgb(180, 132, 30);
 }
 
 /* Only if there was no site option to copy. */
-button.ebert-option:not([class*="-module"]) {
+button.supercrit-option:not([class*="-module"]) {
   padding: 8px 18px;
   border: 0;
   border-radius: 20px;
   background: #0a0a0a;
   color: #d2d2d2;
-  font: 400 15px/1.5 var(--ebert-font);
+  font: 400 15px/1.5 var(--supercrit-font);
   text-align: left;
   cursor: pointer;
 }
 
-.ebert-slider-row {
+.supercrit-slider-row {
   display: flex;
   align-items: center;
   gap: 14px;
@@ -215,8 +215,8 @@ button.ebert-option:not([class*="-module"]) {
    two forms. That means replacing Chrome's native range rather than tinting it with accent-color:
    a two-handle range has to be hand-drawn anyway, and only a shared rail and knob keep the pair
    from drifting as the native rendering changes under them. */
-.ebert-slider,
-.ebert-range-input {
+.supercrit-slider,
+.supercrit-range-input {
   -webkit-appearance: none;
   appearance: none;
   height: 16px;
@@ -225,22 +225,22 @@ button.ebert-option:not([class*="-module"]) {
   cursor: pointer;
 }
 
-.ebert-slider {
+.supercrit-slider {
   flex: none;
   width: 150px;
 }
 
 /* The filled part runs to the middle of the knob, which sits half its own width inside each end. */
-.ebert-slider::-webkit-slider-runnable-track {
+.supercrit-slider::-webkit-slider-runnable-track {
   height: 6px;
   border-radius: 3px;
   background:
-    linear-gradient(#d2d2d2, #d2d2d2) left / calc(8px + var(--ebert-fill, 0) * (100% - 16px)) 100% no-repeat,
+    linear-gradient(#d2d2d2, #d2d2d2) left / calc(8px + var(--supercrit-fill, 0) * (100% - 16px)) 100% no-repeat,
     #2e2e2e;
 }
 
-.ebert-slider::-webkit-slider-thumb,
-.ebert-range-input::-webkit-slider-thumb {
+.supercrit-slider::-webkit-slider-thumb,
+.supercrit-range-input::-webkit-slider-thumb {
   -webkit-appearance: none;
   appearance: none;
   width: 16px;
@@ -251,45 +251,45 @@ button.ebert-option:not([class*="-module"]) {
 }
 
 /* Centres the 16px knob on the 6px rail; the range inputs carry their own 16px transparent track. */
-.ebert-slider::-webkit-slider-thumb {
+.supercrit-slider::-webkit-slider-thumb {
   margin-top: -5px;
 }
 
-.ebert-slider:focus,
-.ebert-range-input:focus {
+.supercrit-slider:focus,
+.supercrit-range-input:focus {
   outline: none;
 }
 
-.ebert-slider:focus-visible::-webkit-slider-thumb,
-.ebert-range-input:focus-visible::-webkit-slider-thumb {
+.supercrit-slider:focus-visible::-webkit-slider-thumb,
+.supercrit-range-input:focus-visible::-webkit-slider-thumb {
   box-shadow: 0 0 0 3px rgba(247, 247, 247, 0.35);
 }
 
-.ebert-slider-value {
+.supercrit-slider-value {
   display: inline-flex;
   align-items: baseline;
   gap: 4px;
   color: #d2d2d2;
-  font: 400 14px/1.2 var(--ebert-font);
+  font: 400 14px/1.2 var(--supercrit-font);
   font-variant-numeric: tabular-nums;
   white-space: nowrap;
 }
 
-.ebert-any {
-  color: var(--ebert-text-muted);
+.supercrit-any {
+  color: var(--supercrit-text-muted);
 }
 
 /* Runtime's two-handle range: two inputs stacked on one rail, each contributing only its knob.
    Their own tracks are transparent and the rail and fill below are drawn instead, so the pair
    reads as a single control while both keep native focus and arrow keys. */
-.ebert-range {
+.supercrit-range {
   position: relative;
   flex: none;
   width: 150px;
   height: 16px;
 }
 
-.ebert-range::before {
+.supercrit-range::before {
   content: "";
   position: absolute;
   top: 5px;
@@ -300,14 +300,14 @@ button.ebert-option:not([class*="-module"]) {
   background: #2e2e2e;
 }
 
-.ebert-range-fill {
+.supercrit-range-fill {
   position: absolute;
   top: 5px;
   height: 6px;
   background: #d2d2d2;
 }
 
-.ebert-range-input {
+.supercrit-range-input {
   position: absolute;
   top: 0;
   left: 0;
@@ -318,21 +318,21 @@ button.ebert-option:not([class*="-module"]) {
   z-index: 2;
 }
 
-.ebert-range-input--hi {
+.supercrit-range-input--hi {
   z-index: 3;
 }
 
-.ebert-range-input--front {
+.supercrit-range-input--front {
   z-index: 4;
 }
 
-.ebert-range-input::-webkit-slider-runnable-track {
+.supercrit-range-input::-webkit-slider-runnable-track {
   height: 16px;
   background: none;
   border: none;
 }
 
-.ebert-range-input::-webkit-slider-thumb {
+.supercrit-range-input::-webkit-slider-thumb {
   pointer-events: auto;
 }
 
@@ -340,123 +340,123 @@ button.ebert-option:not([class*="-module"]) {
 
 /* Shown only while a filter is on: what's filtering, how many films pass, and the way out, so a
    filter kept from an earlier visit can't silently narrow the page. */
-.ebert-status {
+.supercrit-status {
   display: flex;
   align-items: baseline;
   gap: 12px;
   margin: 0 0 20px;
   padding: 0 0 14px;
   border-bottom: 1px solid #2e2e2e;
-  color: var(--ebert-text-secondary);
-  font: 400 14px/1.2 var(--ebert-font);
+  color: var(--supercrit-text-secondary);
+  font: 400 14px/1.2 var(--supercrit-font);
 }
 
-.ebert-status-label {
-  color: var(--ebert-green);
+.supercrit-status-label {
+  color: var(--supercrit-green);
   font-weight: 500;
 }
 
-.ebert-status-count {
+.supercrit-status-count {
   margin-right: auto;
-  color: var(--ebert-text-muted);
+  color: var(--supercrit-text-muted);
   font-variant-numeric: tabular-nums;
 }
 
-.ebert-link {
+.supercrit-link {
   border: 0;
   background: none;
   padding: 0;
-  color: var(--ebert-text-muted);
-  font: 500 13px/1 var(--ebert-font);
+  color: var(--supercrit-text-muted);
+  font: 500 13px/1 var(--supercrit-font);
   text-decoration: underline;
   text-underline-offset: 3px;
   cursor: pointer;
 }
 
-.ebert-link:hover,
-.ebert-link:focus-visible {
-  color: var(--ebert-text);
+.supercrit-link:hover,
+.supercrit-link:focus-visible {
+  color: var(--supercrit-text);
 }
 
-.ebert-empty {
+.supercrit-empty {
   display: flex;
   align-items: baseline;
   gap: 12px;
   padding: 24px 0;
-  color: var(--ebert-text-secondary);
-  font: 400 15px/1.4 var(--ebert-font);
+  color: var(--supercrit-text-secondary);
+  font: 400 15px/1.4 var(--supercrit-font);
 }
 
-.ebert-empty[hidden],
-.ebert-more[hidden] {
+.supercrit-empty[hidden],
+.supercrit-more[hidden] {
   display: none;
 }
 
-.ebert-more {
+.supercrit-more {
   height: 1px;
 }
 
 /* The site's grid and its loader, set aside while ours stands in. */
-.ebert-hidden {
+.supercrit-hidden {
   display: none !important;
 }
 
 /* ---------- Film detail page ---------- */
 
-.ebert-detail {
+.supercrit-detail {
   display: flex;
   align-items: baseline;
   flex-wrap: wrap;
   gap: 8px;
   width: fit-content;
   margin: 10px 0 6px;
-  color: var(--ebert-text-secondary);
-  font: 400 14px/1.4 var(--ebert-font);
+  color: var(--supercrit-text-secondary);
+  font: 400 14px/1.4 var(--supercrit-font);
   text-decoration: none;
-  animation: ebert-in 0.3s ease-out;
+  animation: supercrit-in 0.3s ease-out;
 }
 
-.ebert-detail:hover,
-.ebert-detail:focus-visible {
-  color: var(--ebert-text-secondary);
+.supercrit-detail:hover,
+.supercrit-detail:focus-visible {
+  color: var(--supercrit-text-secondary);
   text-decoration: none;
 }
 
-.ebert-detail .ebert-star {
+.supercrit-detail .supercrit-star {
   font-size: 15px;
   margin-right: -4px;
 }
 
-.ebert-score {
-  color: var(--ebert-text);
+.supercrit-score {
+  color: var(--supercrit-text);
   font-size: 16px;
   font-weight: 700;
   font-variant-numeric: tabular-nums;
 }
 
-.ebert-label {
+.supercrit-label {
   font-weight: 600;
   transition: color 0.15s;
 }
 
-.ebert-detail:hover .ebert-label,
-.ebert-detail:focus-visible .ebert-label {
-  color: var(--ebert-text);
+.supercrit-detail:hover .supercrit-label,
+.supercrit-detail:focus-visible .supercrit-label {
+  color: var(--supercrit-text);
   text-decoration: underline;
   text-underline-offset: 3px;
 }
 
-.ebert-muted {
-  color: var(--ebert-text-muted);
+.supercrit-muted {
+  color: var(--supercrit-text-muted);
   font-size: 13px;
 }
 
-.ebert-muted::before {
+.supercrit-muted::before {
   content: "·";
   margin-right: 8px;
 }
 
-.ebert-you {
+.supercrit-you {
   display: inline-flex;
   align-items: center;
   align-self: center;
@@ -465,13 +465,13 @@ button.ebert-option:not([class*="-module"]) {
   font-weight: 600;
 }
 
-.ebert-you::before {
+.supercrit-you::before {
   content: "·";
   margin-right: 3px;
-  color: var(--ebert-text-muted);
+  color: var(--supercrit-text-muted);
 }
 
-.ebert-you-rating {
-  color: var(--ebert-green);
+.supercrit-you-rating {
+  color: var(--supercrit-green);
   letter-spacing: 0.05em;
 }
