@@ -1,6 +1,6 @@
 #!/bin/sh
 # Zips what Chrome loads, and nothing else, for upload to the Chrome Web Store:
-# dist/supercrit-<version>.zip. Tests, build scripts, docs and dump/ stay out.
+# dist/supercrit-<version>.zip. Tests, build scripts, docs, dump/ and the icons' SVG source stay out.
 set -eu
 cd "$(dirname "$0")/.."
 
@@ -11,6 +11,6 @@ files="manifest.json background.js content.js content.css popup.html popup.js po
 
 mkdir -p dist
 rm -f "$out"
-zip -rqX "$out" $files -x '*.DS_Store'
+zip -rqX "$out" $files -x '*.DS_Store' 'icons/*.svg'
 echo "$out"
 unzip -l "$out" | tail -n +4 | sed '$d' | sed '$d'

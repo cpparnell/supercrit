@@ -1,0 +1,4 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="128" height="128" viewBox="0 0 128 128">
+<!-- Chrome's guideline for the 128px icon: 96px of art inside 16px of transparent padding. -->
+<rect x="16" y="16" width="96" height="96" rx="20" fill="#141414"/>
+<path fill="#00e054" d="M64.00 29.42L72.53 55.68L100.14 55.68L77.81 71.91L86.34 98.16L64.00 81.94L41.66 98.16L50.19 71.91L27.86 55.68L55.47 55.68Z"/></svg>
