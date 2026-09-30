@@ -38,5 +38,3 @@ There's no build step. It's plain JavaScript that Chrome loads directly.
 - After changing code, reload the extension at `chrome://extensions` and refresh the Criterion tab.
 - Build the snapshot locally with `node scripts/build-snapshot.js` (needs Node 22). `LIMIT=50` gives a quick partial run.
 - Package for the Chrome Web Store with `scripts/package.sh`, which writes `dist/supercrit-<version>.zip`.
-
-[CLAUDE.md](CLAUDE.md) has the full architecture notes.

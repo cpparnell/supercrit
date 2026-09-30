@@ -7,7 +7,7 @@
     "48": "icons/icon-48.png",
     "128": "icons/icon-128.png"
   },
-  "description": "Letterboxd integration for the Criterion Channel",
+  "description": "Unofficial Letterboxd integration for the Criterion Channel",
   "permissions": [
     "storage",
     "alarms"
