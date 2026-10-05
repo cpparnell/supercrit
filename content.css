@@ -378,6 +378,42 @@ button.supercrit-option:not([class*="-module"]) {
   color: var(--supercrit-text);
 }
 
+/* Above the grid whether a Letterboxd filter is on, the site's own filters are, or neither is:
+   it works off whatever's currently showing. */
+.supercrit-header {
+  display: flex;
+  margin: 0 0 20px;
+}
+
+.supercrit-random {
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+  padding: 8px 18px;
+  border: 0;
+  border-radius: 20px;
+  background: var(--supercrit-green);
+  color: #14181c;
+  font: 500 15px/1.5 var(--supercrit-font);
+  cursor: pointer;
+}
+
+.supercrit-random svg {
+  flex: none;
+  width: 14px;
+  height: 14px;
+}
+
+.supercrit-random:hover,
+.supercrit-random:focus-visible {
+  background: #00c04a;
+}
+
+.supercrit-random:disabled {
+  opacity: 0.6;
+  cursor: default;
+}
+
 .supercrit-empty {
   display: flex;
   align-items: baseline;

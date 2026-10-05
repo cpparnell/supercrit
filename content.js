@@ -102,6 +102,13 @@ const EYE =
 const CLOCK =
   '<circle cx="5" cy="5" r="4" fill="none" stroke="currentColor" stroke-width="1.1"/>' +
   '<path d="M5 2.7V5l1.6 1.1" fill="none" stroke="currentColor" stroke-width="1.1" stroke-linecap="round"/>';
+const DICE =
+  '<rect x="0.75" y="0.75" width="8.5" height="8.5" rx="1.5" fill="none" stroke="currentColor" stroke-width="1.1"/>' +
+  '<circle cx="3" cy="3" r="0.9" fill="currentColor"/>' +
+  '<circle cx="7" cy="3" r="0.9" fill="currentColor"/>' +
+  '<circle cx="5" cy="5" r="0.9" fill="currentColor"/>' +
+  '<circle cx="3" cy="7" r="0.9" fill="currentColor"/>' +
+  '<circle cx="7" cy="7" r="0.9" fill="currentColor"/>';
 
 // Marks a rating that belongs to the whole series ("Carlos" for "Carlos: Part 2"): a stacked
 // icon that widens to spell out "Series Rating" on hover.
@@ -700,10 +707,46 @@ function clearFilters() {
   panel?.sync();
 }
 
+// Picks one film at random from the site's current query (genres, decades, sort, …) narrowed by
+// our own filters, and goes there — a full navigation, since there's nowhere "random" to land a
+// client-side route on. Uses the same catalog as the results grid, so a repeat click after it's
+// loaded is instant.
+async function pickRandomFilm(label) {
+  const search = location.search;
+  const original = label.textContent;
+  label.closest("button").disabled = true;
+  label.textContent = "Finding…";
+  let note = null;
+  try {
+    const films = await loadCatalog(search);
+    if (location.search !== search || !onAllFilms()) return;
+    const matched = films.filter((film) => matchesFilters(filmFacts(film), filters));
+    if (!matched.length) {
+      note = "No matches";
+      return;
+    }
+    location.href = filmHref(matched[Math.floor(Math.random() * matched.length)]);
+    return; // navigating away; nothing left to reset
+  } catch (err) {
+    console.warn("[supercrit] random film", err);
+    note = "Couldn't load";
+  } finally {
+    if (label.isConnected) {
+      label.textContent = note ?? original;
+      label.closest("button").disabled = false;
+      if (note) setTimeout(() => label.isConnected && (label.textContent = original), 1500);
+    }
+  }
+}
+
 // Run on every DOM change: the page is rendered client-side, so the panel and grid can appear, be
 // replaced, or be navigated away from at any time. Cheap when nothing has moved.
 function syncAllFilms() {
-  if (!onAllFilms()) return removeResults();
+  if (!onAllFilms()) {
+    header?.root.remove();
+    return removeResults();
+  }
+  ensureHeader();
   if (settings.filters) ensurePanel();
   else panel?.root.remove();
   const siteGrid = document.querySelector(SEL.allFilmsGrid);
@@ -716,6 +759,32 @@ function syncAllFilms() {
     (!loader || loader.classList.contains("supercrit-hidden") === active) &&
     (!active || (siteGrid.nextElementSibling === results?.status && catalogFor === location.search));
   if (!settled) applyFilters();
+}
+
+// A header above the grid, independent of whether a Letterboxd filter is active: it works off
+// whatever's currently showing, ours or the site's own (genre, decade, sort, …), or the whole
+// catalog if nothing is filtering at all.
+let header = null; // { root }
+
+function ensureHeader() {
+  const siteGrid = document.querySelector(SEL.allFilmsGrid);
+  if (!siteGrid) return;
+  if (!header) {
+    const root = el("div", "supercrit-header");
+    const label = el("span", null, "Random");
+    const random = button("supercrit-random", null);
+    random.append(icon(DICE), label);
+    random.addEventListener("click", () => pickRandomFilm(label));
+    root.append(random);
+    header = { root };
+  }
+  // The grid insets its cards with its own padding; a plain sibling of it (unlike the status line,
+  // which is styled to match) would otherwise sit flush against the column's outer edge, under
+  // where the filter sidebar actually is.
+  const { paddingLeft, paddingRight } = getComputedStyle(siteGrid);
+  header.root.style.marginLeft = paddingLeft;
+  header.root.style.marginRight = paddingRight;
+  if (siteGrid.previousElementSibling !== header.root) siteGrid.before(header.root);
 }
 
 // ---------- The panel ----------
@@ -870,7 +939,7 @@ function buildPanel(model) {
   const root = model.cloneNode(true);
   const head = root.querySelector(SEL.accordionButton);
   const title = root.querySelector(SEL.accordionTitle);
-  const icon = root.querySelector(SEL.accordionIcon);
+  const accordionIcon = root.querySelector(SEL.accordionIcon);
   const region = root.querySelector('[role="region"]');
   const content = root.querySelector(SEL.accordionContent);
   if (!head || !title || !region || !content) return null;
@@ -890,7 +959,7 @@ function buildPanel(model) {
     (b) => b.getAttribute("aria-expanded") === "false"
   );
   const closedIcon = closedModel?.querySelector(SEL.accordionIcon)?.cloneNode(true);
-  if (right && icon) right.replaceChildren(icon);
+  if (right && accordionIcon) right.replaceChildren(accordionIcon);
 
   let open = true;
   const setOpen = (value) => {
@@ -898,11 +967,11 @@ function buildPanel(model) {
     head.setAttribute("aria-expanded", open);
     const titleOpen = stateClass(title, "accordionTitleOpen");
     if (titleOpen) title.classList.toggle(titleOpen, open);
-    if (icon && closedIcon) {
-      right.replaceChildren(open ? icon : closedIcon);
+    if (accordionIcon && closedIcon) {
+      right.replaceChildren(open ? accordionIcon : closedIcon);
     } else {
-      const iconOpen = icon && stateClass(icon, "accordionIconOpen");
-      if (iconOpen) icon.classList.toggle(iconOpen, open);
+      const iconOpen = accordionIcon && stateClass(accordionIcon, "accordionIconOpen");
+      if (iconOpen) accordionIcon.classList.toggle(iconOpen, open);
     }
     // The site animates its own regions with inline height and opacity.
     region.style.height = open ? "auto" : "0px";
