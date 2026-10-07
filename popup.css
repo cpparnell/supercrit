@@ -23,14 +23,30 @@ body {
 
 h1 {
   margin: 0 0 14px;
-  color: var(--text);
+  color: var(--green);
   font-size: 15px;
   font-weight: 700;
 }
 
+.logo-super {
+  font-family: "Helvetica Neue", Arial, sans-serif;
+  font-weight: 700;
+}
+
+.logo-crit {
+  font-family: Montserrat, "Helvetica Neue", Arial, sans-serif;
+  font-weight: 500;
+}
+
 .star {
-  color: var(--green);
-  font-weight: 400;
+  width: 16px;
+  height: 16px;
+  margin-left: 2px;
+  vertical-align: -2px;
+  fill: var(--green);
+  stroke: var(--green);
+  stroke-width: 2.5;
+  stroke-linejoin: round;
 }
 
 label {
